@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Clone - Friends</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+    <!-- Header -->
+    <header class="bg-white shadow-md fixed top-0 w-full z-50">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="/dashboard" class="text-2xl font-bold text-blue-600">facebook</a>
+            
+            <nav class="hidden md:flex space-x-6">
+                <a href="/dashboard" class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-lg transition">Home</a>
+                <a href="/friends" class="text-blue-600 bg-blue-50 px-3 py-2 rounded-lg font-medium">Friends</a>
+                <a href="/messages" class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-lg transition">Messages</a>
+                <a href="/profile" class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-lg transition">Profile</a>
+            </nav>
+            
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                    <%= user.firstName.charAt(0).toUpperCase() %>
+                </div>
+                <span class="hidden md:block text-gray-700"><%= user.firstName %> <%= user.lastName %></span>
+                <a href="/logout" class="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded-lg text-gray-700 transition">Logout</a>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <div class="pt-20 max-w-6xl mx-auto px-4 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Friends Navigation -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-md p-4 sticky top-24">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Friends</h2>
+                    <div class="space-y-2">
+                        <a href="#all-friends" class="block w-full text-left p-3 hover:bg-gray-100 rounded-lg transition">
+                            <span class="mr-3">👥</span>All Friends
+                        </a>
+                        <a href="#friend-requests" class="block w-full text-left p-3 hover:bg-gray-100 rounded-lg transition">
+                            <span class="mr-3">📬</span>Friend Requests
+                            <% if (typeof friendRequests !== 'undefined' && friendRequests.length > 0) { %>
+                                <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full ml-2"><%= friendRequests.length %></span>
+                            <% } %>
+                        </a>
+                        <a href="#find-friends" class="block w-full text-left p-3 hover:bg-gray-100 rounded-lg transition">
+                            <span class="mr-3">🔍</span>Find Friends
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Friends Content -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Friend Requests Section -->
+                <% if (typeof friendRequests !== 'undefined' && friendRequests.length > 0) { %>
+                <div id="friend-requests" class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Friend Requests</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <% friendRequests.forEach(request => { %>
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center mb-3">
+                                    <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                                        <%= request.requester.firstName.charAt(0).toUpperCase() %>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800"><%= request.requester.firstName %> <%= request.requester.lastName %></h4>
+                                        <p class="text-sm text-gray-500">Sent <%= new Date(request.createdAt).toLocaleDateString() %></p>
+                                    </div>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <form method="POST" action="/accept-friend" class="flex-1">
+                                        <input type="hidden" name="requestId" value="<%= request._id %>">
+                                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition">
+                                            Accept
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="/decline-friend" class="flex-1">
+                                        <input type="hidden" name="requestId" value="<%= request._id %>">
+                                        <button type="submit" class="w-full bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 px-4 rounded-lg transition">
+                                            Decline
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        <% }) %>
+                    </div>
+                </div>
+                <% } %>
+                
+                <!-- All Friends Section -->
+                <div id="all-friends" class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">All Friends (<%= typeof friends !== 'undefined' ? friends.length : 0 %>)</h3>
+                    <% if (typeof friends !== 'undefined' && friends.length > 0) { %>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <% friends.forEach(friend => { %>
+                                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                                    <div class="flex items-center mb-3">
+                                        <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                                            <%= friend.firstName.charAt(0).toUpperCase() %>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-semibold text-gray-800"><%= friend.firstName %> <%= friend.lastName %></h4>
+                                            <p class="text-sm text-gray-500">Friends since <%= new Date(friend.friendsSince || friend.createdAt).toLocaleDateString() %></p>
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <a href="/messages?user=<%= friend._id %>" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-center transition">
+                                            Message
+                                        </a>
+                                        <a href="/profile/<%= friend._id %>" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-lg text-center transition">
+                                            Profile
+                                        </a>
+                                    </div>
+                                    <div class="mt-2">
+                                        <form method="POST" action="/remove-friend" class="w-full">
+                                            <input type="hidden" name="friendId" value="<%= friend._id %>">
+                                            <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg text-center transition" onclick="return confirm('Are you sure you want to remove <%= friend.firstName %> <%= friend.lastName %> from your friends?')">
+                                                Remove Friend
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } else { %>
+                        <div class="text-center py-8">
+                            <div class="text-6xl mb-4">👥</div>
+                            <h4 class="text-lg font-semibold text-gray-800 mb-2">No friends yet</h4>
+                            <p class="text-gray-600 mb-4">Start connecting with people you know!</p>
+                            <a href="#find-friends" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg transition">
+                                Find Friends
+                            </a>
+                        </div>
+                    <% } %>
+                </div>
+                
+                <!-- Find Friends Section -->
+                <div id="find-friends" class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">People You May Know</h3>
+                    <% if (typeof suggestedFriends !== 'undefined' && suggestedFriends.length > 0) { %>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <% suggestedFriends.forEach(person => { %>
+                                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                                    <div class="flex items-center mb-3">
+                                        <div class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                                            <%= person.firstName.charAt(0).toUpperCase() %>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-semibold text-gray-800"><%= person.firstName %> <%= person.lastName %></h4>
+                                            <p class="text-sm text-gray-500">Joined <%= new Date(person.createdAt).toLocaleDateString() %></p>
+                                        </div>
+                                    </div>
+                                    <form method="POST" action="/send-friend-request">
+                                        <input type="hidden" name="recipientId" value="<%= person._id %>">
+                                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition">
+                                            Add Friend
+                                        </button>
+                                    </form>
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } else { %>
+                        <div class="text-center py-8">
+                            <div class="text-6xl mb-4">🔍</div>
+                            <h4 class="text-lg font-semibold text-gray-800 mb-2">No suggestions available</h4>
+                            <p class="text-gray-600">Check back later for friend suggestions!</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

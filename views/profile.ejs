@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Clone - Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+    <!-- Header -->
+    <header class="bg-white shadow-md fixed top-0 w-full z-50">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="/dashboard" class="text-2xl font-bold text-blue-600">facebook</a>
+            
+            <nav class="hidden md:flex space-x-6">
+                <a href="/dashboard" class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-lg transition">Home</a>
+                <a href="/friends" class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-lg transition">Friends</a>
+                <a href="/messages" class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-lg transition">Messages</a>
+                <a href="/profile" class="text-blue-600 bg-blue-50 px-3 py-2 rounded-lg font-medium">Profile</a>
+            </nav>
+            
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                    <%= user.firstName.charAt(0).toUpperCase() %>
+                </div>
+                <span class="hidden md:block text-gray-700"><%= user.firstName %> <%= user.lastName %></span>
+                <a href="/logout" class="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded-lg text-gray-700 transition">Logout</a>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <div class="pt-20 max-w-4xl mx-auto px-4 py-6">
+        <!-- Profile Header -->
+        <div class="bg-white rounded-lg shadow-md mb-6">
+            <!-- Cover Photo -->
+            <div class="h-48 bg-gradient-to-r from-blue-400 to-purple-600 rounded-t-lg relative">
+                <div class="absolute bottom-4 left-6 flex items-end space-x-4">
+                    <!-- Profile Picture -->
+                    <div class="w-32 h-32 bg-white rounded-full flex items-center justify-center border-4 border-white shadow-lg">
+                        <div class="w-28 h-28 bg-blue-600 rounded-full flex items-center justify-center text-white text-4xl font-bold">
+                            <%= profileUser.firstName.charAt(0).toUpperCase() %>
+                        </div>
+                    </div>
+                    
+                    <!-- Profile Info -->
+                    <div class="pb-4">
+                        <h1 class="text-3xl font-bold text-white"><%= profileUser.firstName %> <%= profileUser.lastName %></h1>
+                        <p class="text-blue-100"><%= typeof profileUser.friends !== 'undefined' ? profileUser.friends.length : 0 %> friends</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Profile Actions -->
+            <div class="px-6 py-4 flex justify-between items-center">
+                <div class="flex space-x-3">
+                    <% if (profileUser._id.toString() === user._id.toString()) { %>
+                        <!-- Own Profile -->
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition" onclick="toggleEditProfile()">
+                            Edit Profile
+                        </button>
+                    <% } else { %>
+                        <!-- Other User's Profile -->
+                        <% if (typeof isFriend !== 'undefined' && isFriend) { %>
+                            <a href="/messages?user=<%= profileUser._id %>" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+                                Message
+                            </a>
+                            <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition">
+                                Friends ✓
+                            </button>
+                        <% } else if (typeof hasPendingRequest !== 'undefined' && hasPendingRequest) { %>
+                            <button class="bg-gray-300 text-gray-600 px-4 py-2 rounded-lg cursor-not-allowed">
+                                Friend Request Sent
+                            </button>
+                        <% } else { %>
+                            <form method="POST" action="/send-friend-request" class="inline">
+                                <input type="hidden" name="recipientId" value="<%= profileUser._id %>">
+                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+                                    Add Friend
+                                </button>
+                            </form>
+                        <% } %>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Edit Profile Modal (Hidden by default) -->
+        <% if (profileUser._id.toString() === user._id.toString()) { %>
+        <div id="editProfileModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Edit Profile</h3>
+                <form method="POST" action="/update-profile" class="space-y-4">
+                    <div>
+                        <label for="firstName" class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                        <input 
+                            type="text" 
+                            id="firstName" 
+                            name="firstName" 
+                            value="<%= profileUser.firstName %>"
+                            required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                        >
+                    </div>
+                    <div>
+                        <label for="lastName" class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                        <input 
+                            type="text" 
+                            id="lastName" 
+                            name="lastName" 
+                            value="<%= profileUser.lastName %>"
+                            required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                        >
+                    </div>
+                    <div>
+                        <label for="bio" class="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+                        <textarea 
+                            id="bio" 
+                            name="bio" 
+                            rows="3"
+                            placeholder="Tell us about yourself..."
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                        ><%= profileUser.bio || '' %></textarea>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition">
+                            Save Changes
+                        </button>
+                        <button type="button" onclick="toggleEditProfile()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 px-4 rounded-lg transition">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <% } %>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Sidebar -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- About -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">About</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center text-gray-600">
+                            <span class="mr-3">📧</span>
+                            <span><%= profileUser.email %></span>
+                        </div>
+                        <div class="flex items-center text-gray-600">
+                            <span class="mr-3">📅</span>
+                            <span>Joined <%= new Date(profileUser.createdAt).toLocaleDateString() %></span>
+                        </div>
+                        <% if (profileUser.bio) { %>
+                        <div class="mt-4">
+                            <p class="text-gray-700"><%= profileUser.bio %></p>
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
+                
+                <!-- Friends -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Friends</h3>
+                        <a href="/friends" class="text-blue-600 hover:text-blue-800 text-sm">See all</a>
+                    </div>
+                    <% if (typeof friends !== 'undefined' && friends.length > 0) { %>
+                        <div class="grid grid-cols-3 gap-2">
+                            <% friends.slice(0, 9).forEach(friend => { %>
+                                <div class="text-center">
+                                    <div class="w-16 h-16 bg-green-500 rounded-lg flex items-center justify-center text-white font-bold mb-1">
+                                        <%= friend.firstName.charAt(0).toUpperCase() %>
+                                    </div>
+                                    <p class="text-xs text-gray-600 truncate"><%= friend.firstName %></p>
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } else { %>
+                        <p class="text-gray-500 text-center">No friends to show</p>
+                    <% } %>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Create Post (Only for own profile) -->
+                <% if (profileUser._id.toString() === user._id.toString()) { %>
+                <div class="bg-white rounded-lg shadow-md p-4">
+                    <form method="POST" action="/create-post">
+                        <textarea 
+                            name="content" 
+                            placeholder="What's on your mind, <%= user.firstName %>?"
+                            class="w-full p-3 bg-gray-100 rounded-lg border-none resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            rows="3"
+                        ></textarea>
+                        <button 
+                            type="submit" 
+                            class="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition"
+                        >
+                            Post
+                        </button>
+                    </form>
+                </div>
+                <% } %>
+                
+                <!-- Posts -->
+                <div class="space-y-4">
+                    <% if (typeof posts !== 'undefined' && posts.length > 0) { %>
+                        <% posts.forEach(post => { %>
+                            <div class="bg-white rounded-lg shadow-md p-6">
+                                <div class="flex items-center mb-4">
+                                    <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                                        <%= post.author.firstName.charAt(0).toUpperCase() %>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800"><%= post.author.firstName %> <%= post.author.lastName %></h4>
+                                        <p class="text-sm text-gray-500"><%= new Date(post.createdAt).toLocaleDateString() %></p>
+                                    </div>
+                                </div>
+                                <div class="text-gray-700 mb-4">
+                                    <%= post.content %>
+                                </div>
+                                <div class="flex space-x-4 pt-3 border-t border-gray-200">
+                                    <button class="flex items-center space-x-2 text-gray-600 hover:bg-gray-100 px-3 py-2 rounded-lg transition">
+                                        <span>👍</span>
+                                        <span>Like</span>
+                                    </button>
+                                    <button class="flex items-center space-x-2 text-gray-600 hover:bg-gray-100 px-3 py-2 rounded-lg transition">
+                                        <span>💬</span>
+                                        <span>Comment</span>
+                                    </button>
+                                    <button class="flex items-center space-x-2 text-gray-600 hover:bg-gray-100 px-3 py-2 rounded-lg transition">
+                                        <span>📤</span>
+                                        <span>Share</span>
+                                    </button>
+                                </div>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <div class="bg-white rounded-lg shadow-md p-8 text-center">
+                            <div class="text-6xl mb-4">📝</div>
+                            <h4 class="text-lg font-semibold text-gray-800 mb-2">No posts yet</h4>
+                            <p class="text-gray-600">
+                                <% if (profileUser._id.toString() === user._id.toString()) { %>
+                                    Share your first post to get started!
+                                <% } else { %>
+                                    <%= profileUser.firstName %> hasn't posted anything yet.
+                                <% } %>
+                            </p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function toggleEditProfile() {
+            const modal = document.getElementById('editProfileModal');
+            modal.classList.toggle('hidden');
+        }
+    </script>
+</body>
+</html>
